@@ -168,6 +168,7 @@ ul.ticks li:before{content:"";position:absolute;left:0;top:.62em;width:10px;heig
 
 /* ============ SLIDE 6 ============ */
 .flowwrap{position:relative;display:grid;grid-template-columns:1020px 1fr;gap:56px;flex:1;min-height:0}
+.flowwrap > .col{display:flex;flex-direction:column;min-height:0}
 #flow{position:relative;width:1020px;height:700px;flex:none}
 #flow svg{position:absolute;left:0;top:0;width:1020px;height:700px;overflow:visible}
 .node{position:absolute;padding:16px 22px;color:#fff;opacity:0;transform:translateY(8px);
@@ -177,16 +178,23 @@ ul.ticks li:before{content:"";position:absolute;left:0;top:.62em;width:10px;heig
 .node .d{font-size:16px;line-height:1.35;margin-top:7px;opacity:.9}
 .node.warm{background:var(--warm);color:var(--ink)}
 .node.cool{background:var(--cool)}
-.node.inkn{background:var(--cool-2)}
+.node.hub{background:var(--cool);padding:28px 36px}
+.node.hub .t{font-size:26px}
+.node.hub .d{font-size:18px}
 .node.side{background:var(--paper-alt);color:var(--ink);border-top:3px solid var(--muted)}
 .node.side .d{opacity:1;color:var(--muted)}
 .node.goal{background:var(--warm);color:var(--ink);border-radius:999px;padding:22px 46px;text-align:center}
 .node.goal .t{font-size:30px;letter-spacing:.1em}
+.flow-cap,.rm-tag{position:absolute;opacity:0;transition:opacity .4s ease;color:var(--muted);pointer-events:none}
+.flow-cap{font-size:13px;line-height:1.35;max-width:250px}
+.flow-cap.lit,.rm-tag.lit{opacity:1}
+.rm-tag{font-family:'Montserrat',Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 #flow .edge{fill:none;stroke:var(--cool);stroke-width:2.5;stroke-dasharray:var(--len);stroke-dashoffset:var(--len);
   marker-end:none}
 #flow .edge.drawn{stroke-dashoffset:0;transition:stroke-dashoffset .5s ease;marker-end:var(--marker)}
 #flow .edge.dash{stroke:var(--muted);stroke-width:2;stroke-dasharray:7 7;stroke-dashoffset:0;opacity:0;transition:opacity .4s ease}
 #flow .edge.dash.drawn{opacity:1}
+#flow .edge.loop{stroke:var(--muted);stroke-width:2}
 .links li{font-size:18px;line-height:1.4;margin-bottom:17px;padding-left:22px;position:relative;list-style:none}
 .links li:before{content:"";position:absolute;left:0;top:.6em;width:11px;height:2px;background:var(--warm)}
 
@@ -544,7 +552,7 @@ body.notes #notes{height:180px;padding:22px 40px}
 
 <!-- ═══════════════ 6 · SYSTÉM KANÁLŮ ═══════════════ -->
 <section class="slide" data-title="Jak spolupracují kanály"
-  data-notes="Kanály nejsou seznam platforem, ale jeden tok k objednávce.|Meta a YouTube dělají publikum. Search sbírá, co tamti rozhýbali.|Remarketingové okno nenastavuju od stolu — podle toho, jak dlouho dopředu se reálně rezervuje.">
+  data-notes="Na web vedou tři nezávislé cesty — ne jeden lineární funnel.|Meta a YouTube vytvářejí poptávku, kterou Search později sklidí. Na web ale vedou i přímo.|Remarketing je smyčka, ne nový zdroj — vrací lidi, kteří na webu už byli.">
   <div class="head" style="margin-bottom:30px">
     <h1 class="hl">Každý kanál má jinou práci.<br>Dohromady vedou k jedné objednávce.</h1>
   </div>
@@ -560,37 +568,36 @@ body.notes #notes{height:180px;padding:22px 40px}
               <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/>
             </marker>
           </defs>
-          <path class="edge" id="e1" d="M510 130 L510 196" style="--marker:url(#ah)"/>
-          <path class="edge" id="e2" d="M510 310 L510 376" style="--marker:url(#ah)"/>
-          <path class="edge" id="e3" d="M510 490 L510 552" style="--marker:url(#ah)"/>
-          <path class="edge dash" id="e4" d="M286 163 L496 163" style="--marker:url(#ahm)"/>
-          <path class="edge dash" id="e5" d="M734 521 L524 521" style="--marker:url(#ahm)"/>
+          <path class="edge dash" id="e1" d="M600 112 C600 156, 670 156, 670 200" style="--marker:url(#ahm)"/>
+          <path class="edge" id="e2" d="M380 112 L380 380" style="--marker:url(#ah)"/>
+          <path class="edge" id="e3" d="M670 300 L670 380" style="--marker:url(#ah)"/>
+          <path class="edge" id="e4" d="M160 310 L160 380" style="--marker:url(#ah)"/>
+          <path class="edge loop" id="e5" d="M740 430 C870 430, 870 530, 740 505" style="--marker:url(#ahm)"/>
+          <path class="edge" id="e6" d="M440 510 L440 575" style="--marker:url(#ah)"/>
         </svg>
-        <div class="node warm" id="n1" style="left:320px;top:20px;width:380px">
+        <div class="node warm" id="n1" style="left:280px;top:12px;width:440px">
           <div class="t">Meta / YouTube</div>
           <div class="d">Vzbudí zájem, spojí vaši CK s exotikou, vytvoří publika</div>
         </div>
-        <div class="node cool" id="n2" style="left:320px;top:200px;width:380px">
+        <p class="flow-cap" id="cap1" style="left:740px;top:108px">vytvořená poptávka, kterou později sklidí vyhledávání</p>
+        <div class="node cool" id="n2" style="left:460px;top:200px;width:420px">
           <div class="t">Search / PMax / Sklik</div>
           <div class="d">Zachytí aktivní zájem — značkový i neznačkový</div>
         </div>
-        <div class="node inkn" id="n3" style="left:320px;top:380px;width:380px">
-          <div class="t">Web a landing page</div>
-          <div class="d">Přesvědčí: cena, termín, transfer, důvěra</div>
-        </div>
-        <div class="node goal" id="n4" style="left:330px;top:552px;width:360px">
-          <div class="t">Objednávka</div>
-        </div>
-        <div class="node side" id="n5" style="left:0;top:118px;width:280px">
+        <div class="node side" id="n5" style="left:0;top:200px;width:270px">
           <div class="t" style="font-size:19px">CRM a e-mail</div>
           <div class="d">Aktivuje stávající zákazníky a využívá vlastní zákaznickou bázi</div>
         </div>
-        <div class="node side" id="n6" style="left:740px;top:468px;width:280px">
-          <div class="t" style="font-size:19px">Remarketing</div>
-          <div class="d">Dotahuje nerozhodnuté — okno podle délky rozhodování</div>
+        <div class="node hub" id="n3" style="left:140px;top:380px;width:600px">
+          <div class="t">Web a landing page</div>
+          <div class="d">Přesvědčí: cena, termín, transfer, důvěra</div>
+        </div>
+        <div class="rm-tag" id="n6" style="left:768px;top:458px">Remarketing</div>
+        <div class="node goal" id="n4" style="left:260px;top:575px;width:360px">
+          <div class="t">Objednávka</div>
         </div>
       </div>
-      <div>
+      <div class="col">
         <div class="eyebrow" style="margin-bottom:22px">Kde se kanály reálně potkávají</div>
         <ul class="links">
           <li>Návštěvníci webu se stávají publiky pro Metu i Google</li>
@@ -600,8 +607,10 @@ body.notes #notes{height:180px;padding:22px 40px}
           <li>Prodeje po telefonu a na pobočce vracíme do reklamních systémů, aby se z nich učily</li>
           <li>Co zabírá v jednom kanálu, přenášíme do ostatních — kreativa i argumenty</li>
         </ul>
-        <div class="rule" style="margin:26px 0 20px"></div>
-        <p class="note">Okno remarketingu nastavíme podle skutečné délky rozhodování a toho, jak dlouho dopředu lidé rezervují — ne odhadem.</p>
+        <div style="margin-top:auto;padding-top:28px">
+          <div class="rule" style="margin-bottom:16px"></div>
+          <p class="note">Okno remarketingu nastavíme podle skutečné délky rozhodování a toho, jak dlouho dopředu lidé rezervují — ne odhadem.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -1122,7 +1131,7 @@ body.notes #notes{height:180px;padding:22px 40px}
   });
 
   /* ---------- animace diagramu kanálů (slide 6) ---------- */
-  var flowSeq = [['n1'],['e1','n2'],['e2','n3'],['e3','n4'],['e4','e5','n5','n6']];
+  var flowSeq = [['n1'],['e1','n2','cap1'],['n5'],['e2','e3','e4','n3'],['e5','n6'],['e6','n4']];
   var flowTimers = [];
   document.querySelectorAll('#flow .edge').forEach(function(p){
     var L = p.getTotalLength ? p.getTotalLength() : 200;
