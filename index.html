@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Exotika — on-line strategie | Acomware</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Mulish:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ---- Brandové barvy Acomware (odečteno kapátkem z loga a z acomware.cz) ---- */
+  --acw-navy:#003363;
+  --acw-orange:#EF7D00;
+  --acw-amber:#FAB001;
+  --acw-yellow:#FFDD00;
+  --acw-grey:#F2F3F5;
+  --acw-white:#FFFFFF;
+
+  /* ---- Sémantické role ---- */
+  --ink:var(--acw-navy);
+  --paper:var(--acw-white);
+  --paper-alt:var(--acw-grey);
+  --cool:var(--acw-navy);      /* data, měření, sklízení poptávky */
+  --warm:var(--acw-orange);    /* značka, vytváření poptávky — POUZE jako plocha */
+  --warm-ink:#B35A00;          /* tatáž role v textu; brandová oranžová na bílé nedá 4,5:1 */
+  --muted:#5F6C85;
+  --line:#D7DDE5;
+  --peak-1:var(--acw-yellow);
+  --peak-2:var(--acw-amber);
+  --peak-3:var(--acw-orange);
+  /* odvozené odstíny navy — pro odstupňování ploch, ne pro nové barvy */
+  --cool-2:#0B4E8F;
+  --cool-3:#1E5C96;
+  --tint-1:#E3E8EE;
+  --tint-2:#D7DDE5;
+  --tint-3:#B9C2CE;
+  --tint-4:#AAB4C2;
+
+  --h1:64px; --h2:36px; --body:24px; --cap:17px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#DADFE6;
+  font-family:'Mulish','Segoe UI',Helvetica,Arial,sans-serif;
+  color:var(--ink);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:3px solid var(--warm);outline-offset:3px}
+
+/* ============ STAGE ============ */
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{
+  width:1920px;height:1080px;position:relative;flex:none;
+  transform-origin:center center;
+  background:var(--paper);
+  box-shadow:0 24px 80px rgba(0,30,70,.25);
+}
+.slide{
+  position:absolute;inset:0;background:var(--paper);
+  padding:64px 96px 92px;display:none;flex-direction:column;
+}
+.slide.on{display:flex}
+.slide.dark{background:var(--ink);color:#fff}
+
+/* ============ TYPOGRAFIE ============ */
+h1.hl{
+  font-family:'Montserrat',Arial,sans-serif;font-weight:700;
+  font-size:var(--h1);line-height:1.16;letter-spacing:.01em;
+  text-transform:uppercase;text-align:center;text-wrap:balance;
+}
+h1.hl.left{text-align:left}
+.sub{
+  font-size:var(--body);font-weight:400;color:var(--muted);
+  text-align:center;margin-top:14px;line-height:1.45;
+}
+.head{margin-bottom:44px;flex:none}
+h2{
+  font-family:'Montserrat',Arial,sans-serif;font-weight:700;
+  font-size:var(--h2);line-height:1.18;letter-spacing:.01em;text-transform:uppercase;
+}
+.eyebrow{font-size:14px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.body{flex:1;min-height:0;display:flex;flex-direction:column}
+p,li{font-size:var(--body);line-height:1.5}
+.cap{font-size:var(--cap);line-height:1.5;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+strong{font-weight:700}
+
+/* ============ PRVKY ============ */
+.assume{
+  display:inline-block;vertical-align:middle;background:var(--cool);color:#fff;
+  font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:5px 11px;margin-left:10px;white-space:nowrap;
+}
+.card{background:var(--paper-alt);padding:26px 28px;border-top:4px solid var(--line)}
+.card h3{font-family:'Montserrat',Arial,sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px}
+.card p{font-size:19px;line-height:1.45}
+.rule{height:1px;background:var(--line);width:100%}
+ul.ticks{list-style:none}
+ul.ticks li{position:relative;padding-left:26px;margin-bottom:12px;font-size:21px;line-height:1.45}
+ul.ticks li:before{content:"";position:absolute;left:0;top:.62em;width:10px;height:2px;background:var(--muted)}
+.note{font-size:16px;color:var(--muted);line-height:1.5}
+.callout{border-left:5px solid var(--warm);padding:4px 0 4px 22px}
+.callout p{font-size:20px;line-height:1.45}
+
+/* ============ FOOTER ============ */
+.foot{position:absolute;left:96px;right:96px;bottom:34px;display:flex;align-items:center;justify-content:space-between;pointer-events:none;z-index:3}
+.pageno{font-size:14px;letter-spacing:.14em;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.slide.dark .pageno,.slide.footdark .pageno{color:rgba(255,255,255,.7)}
+.logo{height:26px;width:auto;display:block;opacity:.95}
+.slide.dark .logo.c,.slide.footdark .logo.c{display:none}
+.slide:not(.dark):not(.footdark) .logo.w{display:none}
+#progress{position:absolute;left:0;bottom:0;height:5px;background:var(--cool);width:0;transition:width .22s ease;z-index:6}
+
+/* ============ SLIDE 1 ============ */
+.s1grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;height:100%}
+.s1grid h1{margin-bottom:0}
+.converge{display:grid;grid-template-columns:1fr 92px 200px;align-items:center;gap:0}
+.streams .tag{padding:20px 24px;font-size:20px;font-weight:600;line-height:1.3}
+.streams .tag.a{background:var(--cool);color:#fff;margin-bottom:22px}
+.streams .tag.b{background:var(--warm);color:var(--ink)}
+.sale{background:var(--ink);color:#fff;font-family:'Montserrat',Arial,sans-serif;font-weight:700;
+  font-size:28px;letter-spacing:.08em;padding:22px 0;text-transform:uppercase;text-align:center}
+
+/* ============ SLIDE 2 ============ */
+.lever{display:flex;flex-direction:column;padding:36px 32px;min-height:452px;color:#fff}
+.lever.c{background:var(--cool)}
+.lever.i{background:var(--cool-2)}
+.lever.w{background:var(--warm);color:var(--ink)}
+.lever.w .ch{border-top-color:rgba(0,51,99,.35)}
+.lever .n{font-size:13px;letter-spacing:.16em;font-weight:700;opacity:.75;margin-bottom:auto}
+.lever h3{font-family:'Montserrat',Arial,sans-serif;font-size:44px;font-weight:700;letter-spacing:.02em;margin:0 0 16px}
+.lever p{font-size:21px;line-height:1.4;margin-bottom:18px}
+.lever .ch{font-size:17px;opacity:.85;line-height:1.4;border-top:1px solid rgba(255,255,255,.3);padding-top:14px}
+.band{background:var(--paper-alt);padding:20px 30px;display:flex;align-items:center;justify-content:center;gap:16px;
+  font-size:20px;font-weight:600;letter-spacing:.02em}
+
+/* ============ SLIDE 3 ============ */
+.qbox{background:var(--paper-alt);padding:22px 24px;border-top:4px solid var(--cool)}
+.qbox h3{font-family:'Montserrat',Arial,sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--cool);margin-bottom:10px}
+.qbox p{font-size:18px;line-height:1.42}
+.bigq{display:flex;gap:14px;align-items:flex-start}
+.bigq .q{font-family:'Montserrat',Arial,sans-serif;font-size:26px;font-weight:700;color:var(--warm-ink);line-height:1;flex:none;margin-top:2px}
+.bigq p{font-size:19px;line-height:1.4;font-weight:600}
+.toolbar{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 28px}
+.toolbar .tk{font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--cool);margin-bottom:6px}
+.toolbar p{font-size:16px;line-height:1.4;color:var(--muted)}
+
+/* ============ SLIDE 4 ============ */
+.tier{display:grid;grid-template-columns:140px 1fr;gap:26px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line)}
+.tier h3{font-family:'Montserrat',Arial,sans-serif;font-size:26px;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+.tier p{font-size:19px;color:var(--muted);line-height:1.4;margin-top:4px}
+.tier .share{text-align:right;font-family:'Montserrat',Arial,sans-serif;font-size:38px;font-weight:700;font-variant-numeric:tabular-nums}
+.formula{display:flex;flex-wrap:wrap;align-items:center;gap:0 14px;font-size:19px;font-weight:600}
+.formula b{background:var(--paper-alt);padding:8px 16px;font-weight:600}
+.formula i{color:var(--muted);font-style:normal}
+
+/* ============ SLIDE 5 ============ */
+.motiv{display:grid;grid-template-columns:1fr 1px 1fr;gap:0 40px;align-items:stretch}
+.motiv .row{display:contents}
+.mc{padding:16px 0;border-bottom:1px solid var(--line)}
+.mc.l{font-style:italic;font-size:21px;color:var(--ink)}
+.mc.r{font-size:21px;font-weight:600}
+.vline{background:var(--line);width:1px}
+
+/* ============ SLIDE 6 ============ */
+.flowwrap{position:relative;display:grid;grid-template-columns:1020px 1fr;gap:56px;flex:1;min-height:0}
+#flow{position:relative;width:1020px;height:700px;flex:none}
+#flow svg{position:absolute;left:0;top:0;width:1020px;height:700px;overflow:visible}
+.node{position:absolute;padding:16px 22px;color:#fff;opacity:0;transform:translateY(8px);
+  transition:opacity .35s ease,transform .35s ease}
+.node.lit{opacity:1;transform:none}
+.node .t{font-family:'Montserrat',Arial,sans-serif;font-size:23px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1.15}
+.node .d{font-size:16px;line-height:1.35;margin-top:7px;opacity:.9}
+.node.warm{background:var(--warm);color:var(--ink)}
+.node.cool{background:var(--cool)}
+.node.inkn{background:var(--cool-2)}
+.node.side{background:var(--paper-alt);color:var(--ink);border-top:3px solid var(--muted)}
+.node.side .d{opacity:1;color:var(--muted)}
+.node.goal{background:var(--warm);color:var(--ink);border-radius:999px;padding:22px 46px;text-align:center}
+.node.goal .t{font-size:30px;letter-spacing:.1em}
+#flow .edge{fill:none;stroke:var(--cool);stroke-width:2.5;stroke-dasharray:var(--len);stroke-dashoffset:var(--len);
+  marker-end:none}
+#flow .edge.drawn{stroke-dashoffset:0;transition:stroke-dashoffset .5s ease;marker-end:var(--marker)}
+#flow .edge.dash{stroke:var(--muted);stroke-width:2;stroke-dasharray:7 7;stroke-dashoffset:0;opacity:0;transition:opacity .4s ease}
+#flow .edge.dash.drawn{opacity:1}
+.links li{font-size:18px;line-height:1.4;margin-bottom:17px;padding-left:22px;position:relative;list-style:none}
+.links li:before{content:"";position:absolute;left:0;top:.6em;width:11px;height:2px;background:var(--warm)}
+
+/* ============ SLIDE 7 ============ */
+.bar{display:flex;width:100%;height:76px;margin-bottom:8px}
+.seg{position:relative;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;
+  font-variant-numeric:tabular-nums;border-right:2px solid #fff}
+.seg:last-child{border-right:0}
+.barlabels{display:flex;width:100%;margin-bottom:34px}
+.barlabels div{font-size:15px;color:var(--muted);padding-top:8px;border-top:0}
+table.t{width:100%;border-collapse:collapse}
+table.t th{font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;
+  font-weight:700;padding:0 0 12px;border-bottom:1px solid var(--line)}
+table.t td{font-size:20px;padding:15px 0;border-bottom:1px solid var(--line);vertical-align:middle}
+table.t td.n{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+table.t td.r{color:var(--muted);font-size:18px}
+table.t tr.sum td{border-bottom:0;padding-top:16px;font-weight:700}
+table.src td{font-size:18px;padding:13px 16px 13px 0;line-height:1.4}
+table.src td:first-child{font-weight:700;width:280px}
+table.kpi td{font-size:18px;padding:13px 18px 13px 0;line-height:1.4;vertical-align:top}
+table.kpi td:first-child{font-weight:700;font-family:'Montserrat',Arial,sans-serif;font-size:16px;text-transform:uppercase;letter-spacing:.04em;width:220px;white-space:nowrap}
+table.kpi td.r{font-size:17px}
+.swatch{display:inline-block;width:12px;height:12px;margin-right:12px;vertical-align:baseline}
+.claim{font-family:'Montserrat',Arial,sans-serif;font-size:32px;font-weight:700;line-height:1.2;text-transform:uppercase;letter-spacing:.01em}
+
+/* ============ SLIDE 8 ============ */
+.inputs div.i{display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:13px 0;border-bottom:1px solid var(--line)}
+.inputs .k{font-size:19px;line-height:1.35}
+.inputs .v{font-family:'Montserrat',Arial,sans-serif;font-size:24px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+table.sc{width:100%;border-collapse:collapse}
+table.sc th{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:0 0 10px;text-align:right}
+table.sc th:first-child{text-align:left}
+table.sc td{font-size:20px;padding:14px 0;border-top:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+table.sc td:first-child{text-align:left;font-weight:700;font-family:'Montserrat',Arial,sans-serif;font-size:18px;text-transform:uppercase;letter-spacing:.04em}
+table.sc tr.mid td{background:var(--paper-alt)}
+table.sc tr.mid td:first-child{box-shadow:inset 4px 0 0 var(--warm)}
+.sens{display:flex;gap:0;margin-top:10px}
+.sens div{flex:1;padding:14px 18px;background:var(--paper-alt);border-right:2px solid #fff}
+.sens div:last-child{border-right:0}
+.sens .m{font-size:14px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.sens .c{font-family:'Montserrat',Arial,sans-serif;font-size:26px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+
+/* ============ SLIDE 9 ============ */
+.goalbox{border-top:4px solid var(--cool);padding:22px 0 0}
+.goalbox.w{border-top-color:var(--warm)}
+.goalbox h3{font-family:'Montserrat',Arial,sans-serif;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:14px}
+.goalbox li{font-size:19px;margin-bottom:9px}
+.phases div.ph{display:grid;grid-template-columns:172px 1fr;gap:18px;padding:12px 0;border-bottom:1px solid var(--line)}
+.phases .pl{font-family:'Montserrat',Arial,sans-serif;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--warm-ink);padding-top:3px}
+.phases .pl.cool{color:var(--cool)}
+.phases p{font-size:18px;line-height:1.4}
+
+/* ============ SLIDE 10 ============ */
+.metric{display:grid;grid-template-columns:230px 1fr;gap:28px;align-items:center;padding:20px 26px;margin-bottom:12px}
+.metric.a{background:var(--ink);color:#fff}
+.metric.b{background:var(--tint-1)}
+.metric.c{background:var(--paper-alt)}
+.metric h3{font-family:'Montserrat',Arial,sans-serif;font-size:24px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.metric p{font-size:19px;line-height:1.4}
+.metric .lv{font-size:13px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;font-weight:700;margin-bottom:4px}
+.chgoals{display:grid;grid-template-columns:repeat(3,1fr);gap:0 36px;margin-top:8px}
+.chgoals .cg{padding:14px 0;border-bottom:1px solid var(--line)}
+.chgoals h4{font-family:'Montserrat',Arial,sans-serif;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.chgoals p{font-size:17px;line-height:1.4;color:var(--muted)}
+.dark-strip{background:var(--ink);color:#fff;margin:0 -96px -92px;padding:40px 96px 100px}
+.dark-strip p{font-size:23px;line-height:1.5;max-width:1500px}
+.dark-strip p.big{font-family:'Montserrat',Arial,sans-serif;font-size:30px;font-weight:700;text-transform:uppercase;letter-spacing:.01em;margin-bottom:14px}
+
+/* ============ SLIDE 11 ============ */
+.finale{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:1350px}
+.finale .q1,.finale .q2{font-family:'Montserrat',Arial,sans-serif;font-weight:700;font-size:52px;line-height:1.25;letter-spacing:.005em}
+.finale .lbl{font-size:15px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.finale .q1{color:rgba(255,255,255,.55)}
+.finale .q2{color:#fff}
+.finale .close{font-size:26px;color:var(--acw-amber);margin-top:56px;line-height:1.5;font-weight:600}
+
+/* ============ ZÁLOŽNÍ SLIDY ============ */
+.spare-flag{position:absolute;top:34px;right:96px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  font-weight:700;color:#fff;background:var(--muted);padding:5px 11px}
+.tbox{background:var(--paper-alt);padding:24px 26px;border-top:4px solid var(--warm)}
+.tbox h3{font-family:'Montserrat',Arial,sans-serif;font-size:19px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.tbox p{font-size:18px;line-height:1.45}
+.tbox .hyp{font-size:16px;color:var(--muted);margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+.risk{display:grid;grid-template-columns:300px 1fr;gap:30px;padding:16px 0;border-bottom:1px solid var(--line)}
+.risk h3{font-family:'Montserrat',Arial,sans-serif;font-size:19px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:1.25}
+.risk p{font-size:18px;line-height:1.45}
+.wbar{height:12px;background:var(--cool)}
+table.fixed{table-layout:fixed}
+table.fixed td:nth-child(3){padding-right:34px}
+/* záložní slidy: obsah vycentrovaný, ať prázdné místo vypadá záměrně */
+.slide.spare .body{justify-content:center}
+
+/* ============ POZNÁMKY ============ */
+#notes{position:fixed;left:0;right:0;bottom:0;height:0;background:var(--ink);color:#fff;
+  padding:0 40px;overflow:hidden;transition:height .2s ease;z-index:40}
+body.notes #notes{height:180px;padding:22px 40px}
+#notes h4{font-family:'Montserrat',Arial,sans-serif;font-size:13px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--acw-amber);margin-bottom:10px}
+#notes li{font-size:17px;line-height:1.45;margin-bottom:6px;margin-left:20px}
+
+/* ============ PŘEHLED ============ */
+#overview{position:fixed;inset:0;background:rgba(0,26,52,.97);z-index:50;display:none;overflow:auto;padding:40px 48px 60px}
+#overview.on{display:block}
+#overview h4{font-family:'Montserrat',Arial,sans-serif;color:#fff;font-size:15px;letter-spacing:.16em;
+  text-transform:uppercase;margin:0 0 6px}
+#overview .ohint{color:rgba(255,255,255,.6);font-size:14px;margin-bottom:26px}
+#overview .osec{color:var(--acw-amber);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  font-weight:700;margin:32px 0 14px}
+.ogrid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+.thumb{position:relative;background:#fff;cursor:pointer;overflow:hidden;aspect-ratio:16/9;border:2px solid transparent}
+.thumb:hover,.thumb:focus-visible{border-color:var(--warm)}
+.thumb .inner{position:absolute;top:0;left:0;width:1920px;height:1080px;transform-origin:top left;pointer-events:none}
+.thumb .inner .slide{display:flex!important}
+.thumb .tn{position:absolute;left:0;bottom:0;background:var(--ink);color:#fff;font-size:11px;font-weight:700;
+  padding:3px 8px;letter-spacing:.1em;z-index:2}
+
+/* ============ NÁPOVĚDA ============ */
+#help{position:fixed;right:16px;top:14px;z-index:45;font-size:12px;letter-spacing:.06em;color:#4E5C75;
+  background:rgba(255,255,255,.92);padding:7px 13px;font-weight:600;
+  transition:opacity .4s ease;pointer-events:none}
+#help.hide{opacity:0}
+#help b{color:var(--ink)}
+#rotate{display:none}
+@media (max-width:820px) and (orientation:portrait){
+  #rotate{display:block;position:fixed;left:16px;right:16px;top:20px;z-index:46;
+    background:var(--ink);color:#fff;padding:14px 16px;font-size:14px;line-height:1.5}
+  #rotate b{color:var(--acw-amber)}
+}
+@media (max-width:900px){
+  #help{display:none}
+  body.notes #notes{height:150px}
+  .ogrid{grid-template-columns:repeat(2,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+@media print{
+  @page{size:1920px 1080px;margin:0}
+  body{overflow:visible;background:#fff}
+  #help,#rotate,#notes,#overview,#progress{display:none!important}
+  #viewport{position:static;display:block;padding:0!important}
+  #stage{transform:none!important;box-shadow:none;width:1920px;height:auto}
+  .slide{display:flex!important;position:relative;inset:auto;
+    width:1920px;height:1080px;break-after:page;page-break-after:always}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+}
+</style>
+</head>
+<body>
+
+<div id="rotate">Prezentace je v poměru 16:9 — <b>otočte telefon na šířku</b>. Listuje se švihnutím prstu.</div>
+<div id="help"><b>← →</b> listování &nbsp;·&nbsp; <b>O</b> přehled &nbsp;·&nbsp; <b>N</b> poznámky</div>
+
+<div id="viewport">
+<div id="stage">
+
+<!-- ═══════════════ 1 · ÚVOD ═══════════════ -->
+<section class="slide" data-title="Business challenge"
+  data-notes="Neprodávám launch — produkt už běží, řešíme růst prodejů.|Awareness je brzda objemu, ne samostatný cíl. Proto musíme sklízet dnešní poptávku a zároveň vytvářet zítřejší.|Kdybych dala celé 2 miliony jen do Search, narazím na strop trhu.">
+  <div class="body">
+    <div class="s1grid">
+      <div>
+        <div class="eyebrow" style="margin-bottom:22px">On-line strategie · produkt Exotika</div>
+        <h1 class="hl left">Jak za 2 mil. Kč<br>maximalizovat prodej<br>exotiky — dnes i<br>v další sezóně</h1>
+      </div>
+      <div class="streamwrap">
+        <ul class="ticks" style="margin-bottom:46px">
+          <li>Zavedená CK, top 10 na trhu, existující zákaznická báze</li>
+          <li>Produkt Exotika už běží — neřešíme launch, řešíme růst</li>
+          <li>Hlavní bariéra: lidé si CK zatím nespojují s exotikou</li>
+          <li>Cíl: maximalizovat objem prodejů z rozpočtu 2 mil. Kč / rok</li>
+        </ul>
+        <div class="rule" style="margin-bottom:34px"></div>
+        <div class="converge">
+          <div class="streams">
+            <div class="tag a">Poptávka, která existuje dnes</div>
+            <div class="tag b">Poptávka, kterou teprve vytvoříme</div>
+          </div>
+          <svg viewBox="0 0 92 190" preserveAspectRatio="none" style="height:190px;width:92px" aria-hidden="true">
+            <path d="M0 33 C58 33, 40 95, 90 95" fill="none" stroke="var(--cool)" stroke-width="3"/>
+            <path d="M0 157 C58 157, 40 95, 90 95" fill="none" stroke="var(--warm)" stroke-width="3"/>
+          </svg>
+          <div class="sale">Prodej</div>
+        </div>
+        <p style="margin-top:32px;font-size:22px;font-weight:600">Jedno bez druhého nestačí.</p>
+      </div>
+    </div>
+  </div>
+  <div class="peakstrip" data-peaks="strip"></div>
+</section>
+
+<!-- ═══════════════ 2 · TŘI PÁKY ═══════════════ -->
+<section class="slide" data-title="Tři páky růstu"
+  data-notes="Tohle je kostra celé prezentace.|Sklízet = existující poptávka. Vytěžit = web, konverze, databáze. Vytvořit = ať dlouhodobě nenarazíme na strop trhu.|Vlastní báze je hypotéza číslo jedna — ověříme ji v první vlně, není to slib.">
+  <div class="head">
+    <h1 class="hl">Prodeje zvedneme třemi cestami —<br>a každou umíme řídit zvlášť</h1>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+      <div class="lever c">
+        <h3>Sklízet</h3>
+        <p>Být vidět ve chvíli, kdy člověk exotiku aktivně hledá.</p>
+        <div class="n" style="margin-bottom:0"></div>
+        <div class="ch">Google Search · PMax · Sklik · SEO</div>
+      </div>
+      <div class="lever i">
+        <h3>Vytěžit</h3>
+        <p>Získat více objednávek ze stejné návštěvnosti a ze stávající zákaznické báze.</p>
+        <div class="n" style="margin-bottom:0"></div>
+        <div class="ch">Web a landing pages · remarketing · CRM a e-mail</div>
+      </div>
+      <div class="lever w">
+        <h3>Vytvořit</h3>
+        <p>Dostat CK do výběru zákazníka ještě předtím, než začne aktivně hledat.</p>
+        <div class="n" style="margin-bottom:0"></div>
+        <div class="ch">Meta · YouTube · video · inspirativní obsah</div>
+      </div>
+    </div>
+    <div class="callout" style="margin:34px 0 26px">
+      <p><strong>První růstová hypotéza: nejlevnější cesta k dalšímu prodeji vede přes vlastní zákaznickou bázi.</strong> Zákazník už značku zná. Předpokládáme, že tuto důvěru přeneseme na Exotiku levněji než u nového klienta — a ověříme to v první vlně.</p>
+    </div>
+    <div style="margin-top:auto">
+      <div class="band">Data &nbsp;·&nbsp; CRM &nbsp;·&nbsp; Měření &nbsp;<span style="color:var(--muted);font-weight:400">— drží to dohromady</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 3 · CO POTŘEBUJEME ZJISTIT ═══════════════ -->
+<section class="slide" data-title="Co potřebujeme zjistit"
+  data-notes="Bez těchto pěti věcí neumím spočítat, kolik smíme zaplatit za objednávku.|Rozpočet 2 mil. — média vs. produkce — změní celé rozdělení. Kapacita a call centrum je provozní strop.|Regionální odlety využít nemusíme. Ověřila bych ale, jestli nejsou lokálně silnou konkurenční výhodou, kterou umíme zacílit geograficky. To říkám jen pokud se na to zeptají.">
+  <div class="head">
+    <h1 class="hl">Než utratíme první korunu,<br>potřebujeme znát pět věcí</h1>
+    <p class="sub">Odpovědi, které jdou zjistit z vašich dat, si nebudeme vymýšlet.</p>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:18px">
+      <div class="qbox"><h3>Byznys</h3><p>Dnešní prodeje, průměrná hodnota objednávky, marže, přijatelná cena za objednávku</p></div>
+      <div class="qbox"><h3>Produkt</h3><p>Prodeje a kapacity podle destinací, sezónnost, dostupnost</p></div>
+      <div class="qbox"><h3>Zákazník</h3><p>Noví vs. stávající, kdo reálně nakupuje, velikost a kvalita databáze</p></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:36px">
+      <div class="qbox"><h3>Cesta k nákupu</h3><p>Jak dlouho dopředu se rezervuje, online vs. telefon a pobočka, mobil vs. desktop</p></div>
+      <div class="qbox"><h3>Marketing</h3><p>Dnešní investice, výsledky kanálů, značka vs. neznačka, kvalita měření</p></div>
+    </div>
+    <div style="margin-bottom:auto">
+      <div class="rule" style="margin-bottom:28px"></div>
+      <div style="display:grid;gap:22px">
+        <div class="bigq"><span class="q">?</span><p>Co přesně zahrnuje rozpočet 2 mil. Kč — pouze média, nebo i produkci, technologie a správu?</p></div>
+        <div class="bigq"><span class="q">?</span><p>Pokud poptávku výrazně zvýšíme, máme dostatečnou kapacitu zájezdů a zvládne nárůst call centrum / zákaznický servis?</p></div>
+        <div class="bigq"><span class="q">?</span><p>Kolik exotiky dnes prodáváme lidem, kteří s CK už cestovali?</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 4 · Z ČEHO TO ZJISTÍME ═══════════════ -->
+<section class="slide" data-title="Z čeho to zjistíme"
+  data-notes="Ne seznam nástrojů — co z nich beru a jaké rozhodnutí to změní.|Obchod a call centrum sem patří schválně. Bez nich optimalizujeme reklamu mimo realitu provozu.|Pointa: nejdřív data, potom přelévání peněz.">
+  <div class="head">
+    <h1 class="hl">Rozhodovat budeme z vašich dat,<br>ne z oborových průměrů</h1>
+    <p class="sub">Nejdřív spojíme obchodní realitu, zákaznické chování a mediální data.</p>
+  </div>
+  <div class="body">
+    <table class="t src" style="margin-bottom:auto">
+      <thead><tr><th>Zdroj</th><th>Co z něj zjistíme</th><th>Jaké rozhodnutí ovlivní</th></tr></thead>
+      <tbody>
+        <tr><td>Rezervační systém + CRM</td><td>Prodeje, marže, kapacita, noví vs. stávající</td><td class="r">Prioritizace destinací, cílová cena za objednávku, aktivace databáze</td></tr>
+        <tr><td>GA4 + call tracking</td><td>Cesta k nákupu, online vs. telefon, délka rozhodování</td><td class="r">Remarketing, web, měření konverzí</td></tr>
+        <tr><td>Google Ads + Meta + Sklik</td><td>Dnešní výkon, cena za objednávku, značka vs. neznačka</td><td class="r">Rozdělení rozpočtu a škálování</td></tr>
+        <tr><td>Trends + Keyword Planner + Search Console</td><td>Velikost a sezónnost poptávky, hledaná témata</td><td class="r">Hero destinace, timing, obsah</td></tr>
+        <tr><td>Obchod + call centrum + produkt</td><td>Důvody nákupu i nenákupu, kapacitní realita</td><td class="r">Nabídka, argumentace, provozní limity</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:36px">
+      <p><strong>Teprve potom přerozdělujeme rozpočet.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 5 · PRIORITIZACE DESTINACÍ ═══════════════ -->
+<section class="slide" data-title="Prioritizace destinací"
+  data-notes="Patnáct destinací, dva miliony — nejde stavět povědomí všude.|Zanzibar, Mauricius, Thajsko jsou hypotéza k ověření, ne Hero seznam.|Váhy skórování nastavíme podle obchodních priorit CK — to je v záloze.">
+  <div class="head">
+    <h1 class="hl">Dva miliony neuživí<br>patnáct samostatných kampaní</h1>
+    <p class="sub">Investici soustředíme tam, kde má největší smysl.<span class="assume">předpoklad</span></p>
+  </div>
+  <div class="body">
+    <div data-peaks="tiers" style="height:240px;margin-bottom:6px"></div>
+    <div>
+      <div class="tier">
+        <h3 style="color:var(--warm-ink)">Hero</h3>
+        <div><p style="color:var(--ink);font-size:21px;font-weight:600">3 až 5 destinací</p>
+          <p>Aktivně investujeme výkonově i značkově. Vlastní kreativa, vlastní landing page, vlastní publikum.</p></div>
+      </div>
+      <div class="tier">
+        <h3 style="color:var(--cool)">Growth</h3>
+        <div><p style="color:var(--ink);font-size:21px;font-weight:600">Destinace s potenciálem, který chceme ověřit</p>
+          <p>Menší investice, sdílená kreativa. Test — buď se posunou nahoru, nebo dolů.</p></div>
+      </div>
+      <div class="tier" style="border-bottom:0">
+        <h3 style="color:var(--muted)">Long tail</h3>
+        <div><p style="color:var(--ink);font-size:21px;font-weight:600">Zbytek nabídky</p>
+          <p>Primárně sklízíme už existující poptávku. Draze ji nevytváříme.</p></div>
+      </div>
+    </div>
+    <div style="margin-top:auto">
+      <div class="rule" style="margin:18px 0 18px"></div>
+      <div class="formula" style="margin-bottom:14px">
+          <i>Jak je vybereme:</i>
+          <b>poptávka</b><i>×</i><b>marže</b><i>×</i><b>konverze</b><i>×</i><b>konkurence</b><i>×</i><b>kapacita</b><i>×</i><b>sezónnost</b><i>×</i><b>produkt</b>
+      </div>
+      <p class="note" style="font-style:italic">Startovní hypotéza k ověření: jako první prověřit silné zimní destinace, např. Zanzibar, Mauricius nebo Thajsko. Nejde o finální výběr.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 6 · CÍLOVÁ SKUPINA ═══════════════ -->
+<section class="slide" data-title="Cílová skupina"
+  data-notes="O nákupu zájezdu rozhoduje nejčastěji žena. Mediální cílení ale nezužujeme automaticky jen na ni — otestujeme i pár a muže, který zájezd plánuje.|Cena jako „sleva“ vs. potvrzení smyslu je hypotéza do první vlny, ne fakt.|Need states beru z toho, co o zákazníkovi víme, a z výhod CK.">
+  <div class="head">
+    <h1 class="hl">Demografie říká, koho oslovit.<br>Motivace říká, čím ho přesvědčit.</h1>
+    <p class="sub">Páry 30+, vyšší příjem. Komunikace vychází z pohledu ženy, protože o nákupu zájezdu rozhoduje nejčastěji ona.<br>Mediální cílení ale nezužujeme automaticky pouze na ženy.</p>
+  </div>
+  <div class="body">
+    <div class="motiv" style="margin-bottom:26px">
+      <div class="mc l" style="border-bottom:1px solid var(--line);font-style:normal;font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;padding-bottom:10px">Co si zákazník říká</div>
+      <div class="vline"></div>
+      <div class="mc r" style="font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;padding-bottom:10px">Čím odpovíme</div>
+
+      <div class="mc l">„V zimě chci konečně do tepla.“</div><div class="vline"></div>
+      <div class="mc r">30 °C v lednu — konkrétně, ne obecné palmy</div>
+
+      <div class="mc l">„Chci něco výjimečnějšího než klasickou Evropu.“</div><div class="vline"></div>
+      <div class="mc r">Zážitek, který se doma vypráví</div>
+
+      <div class="mc l">„Láká mě to, ale nechci řešit logistiku.“</div><div class="vline"></div>
+      <div class="mc r">Transfer a servis CK, vše zařízené</div>
+
+      <div class="mc l">„Exotika je na nás moc drahá.“</div><div class="vline"></div>
+      <div class="mc r">Nízká cena a flexibilní délka pobytu</div>
+
+      <div class="mc l" style="border-bottom:0">„S váma už jsem jela.“</div><div class="vline"></div>
+      <div class="mc r" style="border-bottom:0">Nabídka pro stávající klienty</div>
+    </div>
+
+    <div class="callout" style="margin-bottom:auto">
+      <p><strong>Hypotéza k ceně:</strong> u movitější skupiny nízká cena nefunguje primárně jako sleva, ale jako potvrzení, že atraktivní exotika dává ekonomicky smysl. Ověříme to v první vlně.</p>
+    </div>
+
+    <div class="band" style="margin-top:22px">
+      Vaše výhody sedí na ty bariéry: &nbsp;nízká cena&nbsp;·&nbsp;servis a transfer&nbsp;·&nbsp;flexibilní délka&nbsp;·&nbsp;důvěra v zavedenou CK
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 6 · SYSTÉM KANÁLŮ ═══════════════ -->
+<section class="slide" data-title="Jak spolupracují kanály"
+  data-notes="Kanály nejsou seznam platforem, ale jeden tok k objednávce.|Meta a YouTube dělají publikum. Search sbírá, co tamti rozhýbali.|Remarketingové okno nenastavuju od stolu — podle toho, jak dlouho dopředu se reálně rezervuje.">
+  <div class="head" style="margin-bottom:30px">
+    <h1 class="hl">Každý kanál má jinou práci.<br>Dohromady vedou k jedné objednávce.</h1>
+  </div>
+  <div class="body">
+    <div class="flowwrap">
+      <div id="flow">
+        <svg viewBox="0 0 1020 700" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--cool)"/>
+            </marker>
+            <marker id="ahm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/>
+            </marker>
+          </defs>
+          <path class="edge" id="e1" d="M510 130 L510 196" style="--marker:url(#ah)"/>
+          <path class="edge" id="e2" d="M510 310 L510 376" style="--marker:url(#ah)"/>
+          <path class="edge" id="e3" d="M510 490 L510 552" style="--marker:url(#ah)"/>
+          <path class="edge dash" id="e4" d="M286 163 L496 163" style="--marker:url(#ahm)"/>
+          <path class="edge dash" id="e5" d="M734 521 L524 521" style="--marker:url(#ahm)"/>
+        </svg>
+        <div class="node warm" id="n1" style="left:320px;top:20px;width:380px">
+          <div class="t">Meta / YouTube</div>
+          <div class="d">Vzbudí zájem, spojí vaši CK s exotikou, vytvoří publika</div>
+        </div>
+        <div class="node cool" id="n2" style="left:320px;top:200px;width:380px">
+          <div class="t">Search / PMax / Sklik</div>
+          <div class="d">Zachytí aktivní zájem — značkový i neznačkový</div>
+        </div>
+        <div class="node inkn" id="n3" style="left:320px;top:380px;width:380px">
+          <div class="t">Web a landing page</div>
+          <div class="d">Přesvědčí: cena, termín, transfer, důvěra</div>
+        </div>
+        <div class="node goal" id="n4" style="left:370px;top:552px;width:280px">
+          <div class="t">Booking</div>
+        </div>
+        <div class="node side" id="n5" style="left:0;top:118px;width:280px">
+          <div class="t" style="font-size:19px">CRM a e-mail</div>
+          <div class="d">Aktivuje stávající zákazníky a využívá vlastní zákaznickou bázi</div>
+        </div>
+        <div class="node side" id="n6" style="left:740px;top:468px;width:280px">
+          <div class="t" style="font-size:19px">Remarketing</div>
+          <div class="d">Dotahuje nerozhodnuté — okno podle délky rozhodování</div>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:22px">Kde se kanály reálně potkávají</div>
+        <ul class="links">
+          <li>Návštěvníci webu se stávají publiky pro Metu i Google</li>
+          <li>Kdo viděl video, dostane příště konkrétní destinaci a termín</li>
+          <li>Zákazníci CK dostávají nabídku exotiky e-mailem — a stejný segment nahrajeme do reklamních systémů</li>
+          <li>Landing pages stavíme podle destinace i podle motivace, ne jednu pro všechno</li>
+          <li>Prodeje po telefonu a na pobočce vracíme do reklamních systémů, aby se z nich učily</li>
+          <li>Co zabírá v jednom kanálu, přenášíme do ostatních — kreativa i argumenty</li>
+        </ul>
+        <div class="rule" style="margin:26px 0 20px"></div>
+        <p class="note">Okno remarketingu nastavíme podle skutečné délky rozhodování a toho, jak dlouho dopředu lidé rezervují — ne odhadem.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 7 · ROZPOČET ═══════════════ -->
+<section class="slide" data-title="Rozpočet"
+  data-notes="Startovní rozdělení, ne roční plán. Po první dostatečně reprezentativní fázi dat přeléváme.|Rezerva není mrtvé peníze — je na přesun tam, kde se objeví příležitost.|2 mil. bereme jako média. Pokud má být produkce uvnitř, rozdělení upravíme.">
+  <div class="head">
+    <h1 class="hl">Dva miliony korun:<br>startovní rozdělení</h1>
+  </div>
+  <div class="body">
+    <div class="bar">
+      <div class="seg" style="width:45%;background:var(--cool)">45 %</div>
+      <div class="seg" style="width:10%;background:var(--cool-3)">10 %</div>
+      <div class="seg" style="width:25%;background:var(--warm);color:var(--ink)">25 %</div>
+      <div class="seg" style="width:10%;background:var(--acw-amber);color:var(--ink)">10 %</div>
+      <div class="seg" style="width:5%;background:var(--tint-3);color:var(--ink)">5 %</div>
+      <div class="seg" style="width:5%;background:var(--tint-2);color:var(--ink)">5 %</div>
+    </div>
+    <div class="barlabels">
+      <div style="width:55%"><strong style="color:var(--cool)">Sklízíme poptávku, která už existuje</strong> — 1 100 000 Kč</div>
+      <div style="width:35%"><strong style="color:var(--warm-ink)">Vytváříme poptávku na zítřek</strong> — 700 000 Kč</div>
+      <div style="width:10%;text-align:right;white-space:nowrap">Učení a manévr — 200 000 Kč</div>
+    </div>
+
+    <table class="t">
+      <thead><tr><th>Kanál</th><th style="width:230px">Roční rozpočet</th><th style="width:110px">Podíl</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><span class="swatch" style="background:var(--cool)"></span>Google Search + PMax</td><td class="n">900 000 Kč</td><td class="n">45 %</td><td class="r">Search zachytí aktivní poptávku. PMax rozšíří zásah v Googlu, pokud máme data a měření</td></tr>
+        <tr><td><span class="swatch" style="background:var(--cool-3)"></span>Sklik / Seznam</td><td class="n">200 000 Kč</td><td class="n">10 %</td><td class="r">Další zásah českého publika; škálujeme podle ceny za objednávku</td></tr>
+        <tr><td><span class="swatch" style="background:var(--warm)"></span>Meta</td><td class="n">500 000 Kč</td><td class="n">25 %</td><td class="r">Vytváří zájem a vrací návštěvníky</td></tr>
+        <tr><td><span class="swatch" style="background:var(--acw-amber)"></span>YouTube</td><td class="n">200 000 Kč</td><td class="n">10 %</td><td class="r">Posiluje spojení CK s exotikou — ve dvou vlnách, ne celoročně</td></tr>
+        <tr><td><span class="swatch" style="background:var(--tint-3)"></span>Testy</td><td class="n">100 000 Kč</td><td class="n">5 %</td><td class="r">Nová publika, formáty, destinace</td></tr>
+        <tr><td><span class="swatch" style="background:var(--tint-2)"></span>Rezerva</td><td class="n">100 000 Kč</td><td class="n">5 %</td><td class="r">Přesun tam, kde se objeví nejlepší příležitost</td></tr>
+        <tr class="sum"><td>Celkem</td><td class="n">2 000 000 Kč</td><td class="n">100 %</td><td class="r"></td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:auto;padding-top:22px">
+      <p class="claim" style="font-size:26px">Startovní rozdělení není neměnný roční plán.<span class="assume">předpoklad</span></p>
+      <p style="font-size:19px;margin-top:10px">Investici do vyhledávání omezuje množství poptávky, kterou dokážeme získávat za přijatelnou cenu. Jakmile ji pokryjeme, další peníze musí pomáhat vytvářet novou poptávku — ne zdražovat boj o stejné zákazníky.</p>
+      <p class="note" style="margin-top:12px">Rezerva není nevyužitý rozpočet — je předem vyčleněná na přesun do kanálu, destinace nebo období s nejlepší příležitostí. 2 mil. Kč bereme jako mediální rozpočet. Produkci řešíme mimo něj, nebo využijeme existující obsah. Pokud má být součástí, rozdělení médií upravíme.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 9 · EKONOMIKA ═══════════════ -->
+<section class="slide" data-title="Ekonomika produktu"
+  data-notes="Ilustrační model, ne forecast. 80 tisíc a 10 % marže jsou pracovní vstupy.|Cílová CPA 3 200 Kč = 40 % modelové marže. 8 000 Kč by spolkl celou marži — to neoznačuju jako firemní break-even.|Kapacita: 570 objednávek je cca 11 týdně, ve špičce víc. Unesou to?">
+  <div class="head">
+    <h1 class="hl">Kolik objednávek musí 2 mil. Kč<br>přinést, aby dávaly smysl?</h1>
+    <p class="sub">Ilustrační model — vstupy po auditu nahradíme skutečnými čísly CK.<span class="assume">předpoklad</span></p>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;flex:1">
+      <div>
+        <div class="eyebrow" style="margin-bottom:14px">Modelové vstupy</div>
+        <div class="inputs">
+          <div class="i"><span class="k">Průměrná objednávka (2 osoby)</span><span class="v">80 000 Kč</span></div>
+          <div class="i"><span class="k">Modelová hrubá marže</span><span class="v">10 % = 8 000 Kč</span></div>
+          <div class="i"><span class="k">Kolik z ní smí spotřebovat marketing</span><span class="v">40 %</span></div>
+          <div class="i" style="border-bottom:0;background:var(--paper-alt);padding:16px 18px;margin-top:8px">
+            <span class="k" style="font-weight:700">Cílová cena za objednávku</span><span class="v" style="color:var(--warm-ink)">3 200 Kč</span></div>
+        </div>
+        <p class="note" style="margin-top:18px">Pokud se skutečná marže změní, mění se i cílová CPA: <strong style="color:var(--ink)">6 % → 1 920 Kč · 10 % → 3 200 Kč · 14 % → 4 480 Kč</strong></p>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:14px">Co 2 mil. Kč přinesou při různé CPA</div>
+        <table class="t" style="margin-bottom:0">
+          <thead><tr><th>Cena za objednávku</th><th style="width:180px">Objednávky</th><th>Interpretace</th></tr></thead>
+          <tbody>
+            <tr><td class="n">2 500 Kč</td><td class="n">800</td><td class="r">pod cílovou CPA</td></tr>
+            <tr><td class="n">3 500 Kč</td><td class="n">cca 570</td><td class="r">lehce nad cílem</td></tr>
+            <tr><td class="n">5 000 Kč</td><td class="n">400</td><td class="r">výrazně nad cílem</td></tr>
+          </tbody>
+        </table>
+        <div class="callout" style="margin-top:28px">
+          <p>570 objednávek ročně je v průměru přibližně 11 týdně. Ve špičce bude potřeba zvládnout víc. Má CK dostatečnou kapacitu — a zvládne nárůst i call centrum?</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:auto;padding-top:28px">
+      <p class="claim" style="font-size:26px">Objem umíme modelovat. Zdravý objem poznáme až ze skutečné marže.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 10 · NAČASOVÁNÍ A CÍLE ═══════════════ -->
+<section class="slide" data-title="Načasování a cíle"
+  data-notes="Křivka je hypotéza z chování trhu — přepíšu ji rezervacemi CK.|Nerozdělujeme na dvanáctiny. Měsíc se odvíjí od rezervací, hledanosti, délky rozhodování a kapacity.|Krátkodobě narovnat měření a první prodeje. Dlouhodobě objem, ne jednorázová kampaň.">
+  <div class="head" style="margin-bottom:32px">
+    <h1 class="hl">Rozpočet kopíruje, kdy se rezervuje —<br>ne kdy se cestuje.<span class="assume">předpoklad</span></h1>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 620px;gap:60px;flex:1;min-height:0">
+      <div style="display:flex;flex-direction:column">
+        <div data-peaks="season" style="height:250px"></div>
+        <p class="note" style="margin:6px 0 24px">Výška vrcholu = intenzita investice. Křivka kopíruje, kdy se rezervuje.</p>
+        <div class="phases">
+          <div class="ph"><div class="pl cool">Celoročně</div><p>Sklízíme existující poptávku: Search, PMax, Sklik, remarketing, CRM.</p></div>
+          <div class="ph"><div class="pl">Před vlnou</div><p>Víc vytváření poptávky — Meta a YouTube, než začne hlavní rezervační vlna.</p></div>
+          <div class="ph"><div class="pl cool">Ve špičce</div><p>Navyšujeme Search, PMax a remarketing. Sklízíme, co dozrálo.</p></div>
+          <div class="ph" style="border-bottom:0"><div class="pl">Mimo špičku</div><p>Testy, SEO, úpravy webu a příprava. Nejlevnější čas na učení.</p></div>
+        </div>
+        <div class="callout" style="margin-top:auto;padding-top:0">
+          <p>Rozpočet nerozdělujeme rovnoměrně na dvanáctiny. Měsíční investice se odvíjí od historické křivky rezervací, hledanosti, délky rozhodování a kapacity.</p>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:34px">
+        <div class="goalbox">
+          <h3>Krátkodobě · 0–3 měsíce</h3>
+          <ul class="ticks">
+            <li>Narovnat měření</li>
+            <li>Zvýšit prodeje z existující poptávky</li>
+            <li>Vybrat Hero destinace</li>
+            <li>Otestovat hlavní sdělení</li>
+            <li>Aktivovat databázi</li>
+          </ul>
+        </div>
+        <div class="goalbox w">
+          <h3>Dlouhodobě · 3–12 měsíců</h3>
+          <ul class="ticks">
+            <li>Růst objemu prodejů exotiky</li>
+            <li>Růst při udržitelné ceně za získání zákazníka</li>
+            <li>Silnější spojení CK s exotikou</li>
+            <li>Opakovatelný sezónní model</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 11 · CÍLE KANÁLŮ ═══════════════ -->
+<section class="slide" data-title="Cíle jednotlivých kanálů"
+  data-notes="Tohle je bod, na který se ptají: cíle a metriky u jednotlivých kanálů.|Každý kanál má jinou práci, proto ho neměříme stejným číslem.|Jak měříme celek — další slide.">
+  <div class="head">
+    <h1 class="hl">Každý kanál má jinou práci —<br>proto ho neměříme stejným číslem</h1>
+  </div>
+  <div class="body">
+    <table class="t kpi" style="margin-top:8px">
+      <thead><tr><th>Kanál</th><th>Hlavní úkol</th><th>Co primárně sledujeme</th></tr></thead>
+      <tbody>
+        <tr><td>Google Search</td><td>Zachytit aktivní poptávku</td><td class="r">Cena za objednávku, konverzní poměr, podíl ve vyhledávání, značka vs. neznačka</td></tr>
+        <tr><td>PMax</td><td>Rozšířit prodejní zásah v Googlu</td><td class="r">Objednávky, cena za objednávku, kontrola překryvu se Search</td></tr>
+        <tr><td>Meta</td><td>Vytvářet zájem a vracet návštěvníky</td><td class="r">Kvalitní návštěvy, návraty na web, asistované objednávky, cena za objednávku u remarketingu</td></tr>
+        <tr><td>YouTube</td><td>Posílit spojení CK s exotikou</td><td class="r">Kvalitní zhlédnutí a návštěvy, vývoj značkového hledání, následné konverze</td></tr>
+        <tr><td>Sklik / Seznam</td><td>Zachytit další českou poptávku</td><td class="r">Objednávky, cena za objednávku, přínos oproti Google</td></tr>
+        <tr><td>CRM / e-mail</td><td>Aktivovat stávající zákazníky</td><td class="r">Objednávky, tržby z databáze, konverze kampaní</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════ 12 · JAK MĚŘÍME CELEK ═══════════════ -->
+<section class="slide footdark" data-title="Jak měříme celek"
+  data-notes="North star je víc prodejů při udržitelné CPA.|Když se pohádáme o čísla, platí byznys nahoře.|Inkrementalitu ověříme testem s kontrolní skupinou, pokud objem dat dovolí — jinak kombinace business dat, poptávky a atribuce.">
+  <div class="head" style="margin-bottom:28px">
+    <h1 class="hl">Úspěch nehodnotíme podle<br>jedné reklamní platformy</h1>
+    <p class="sub">Více prodejů při dlouhodobě udržitelné ceně za objednávku.</p>
+  </div>
+  <div class="body">
+    <div>
+      <div class="metric a">
+        <div><div class="lv">1 · byznys</div><h3>Prodej</h3></div>
+        <p>Počet objednávek &nbsp;·&nbsp; tržby &nbsp;·&nbsp; cena za objednávku &nbsp;·&nbsp; marže &nbsp;·&nbsp; obsazenost kapacit</p>
+      </div>
+      <div class="metric b" style="margin-left:60px">
+        <div><div class="lv">2 · výkon</div><h3>Kanály</h3></div>
+        <p>Konverzní poměr &nbsp;·&nbsp; ROAS &nbsp;·&nbsp; značka vs. neznačka &nbsp;·&nbsp; noví vs. stávající zákazníci</p>
+      </div>
+      <div class="metric c" style="margin-left:120px">
+        <div><div class="lv">3 · poptávka</div><h3>Značka</h3></div>
+        <p>Značkové hledání &nbsp;·&nbsp; přímá návštěvnost &nbsp;·&nbsp; vývoj spojení CK + exotika</p>
+      </div>
+    </div>
+    <p class="note" style="margin:28px 0 0">Tam, kde objem dat dovolí, ověříme skutečný přírůstek prodejů testem s kontrolní skupinou. Jinak kombinujeme obchodní data, změny v poptávce a atribuční pohled.</p>
+    <div style="margin-top:auto">
+      <div class="dark-strip">
+        <p class="big">ROAS z jedné platformy není celá pravda</p>
+        <p>Imprese, CTR a dosah nejsou cílem — jsou diagnostika.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 13 · ZÁVĚR ═══════════════ -->
+<section class="slide dark" data-title="Závěr"
+  data-notes="Jedna myšlenka, ne shrnutí. Posun z prodává i exotiku na když chci exotiku, myslím na tuhle CK.|Končíme u prodeje: víc z dnešní poptávky, vyšší konverze, větší poptávka na další sezónu.|Pak Q&A — záložní slidy přes O.">
+  <div class="body">
+    <div class="finale">
+      <div style="margin-bottom:52px">
+        <div class="lbl" style="color:rgba(255,255,255,.5)">Dnes</div>
+        <p class="q1">„Tahle cestovka prodává i exotiku.“</p>
+      </div>
+      <div>
+        <div class="lbl" style="color:var(--acw-amber)">Cíl</div>
+        <p class="q2">„Když chci exotiku, myslím na tuhle cestovku.“</p>
+      </div>
+      <p class="close">Více prodejů z dnešní poptávky. Vyšší konverze. Větší poptávka pro další sezónu.</p>
+    </div>
+  </div>
+  <div class="peakstrip" data-peaks="strip-dark"></div>
+</section>
+
+<!-- ═══════════════ 12 · ZÁLOŽNÍ — TŘI TESTY ═══════════════ -->
+<section class="slide spare" data-title="Čím bych začala"
+  data-notes="Tři testy, které se dají spustit v prvních dvou týdnech a každý odpoví na jinou otázku.|Třetí test je nejlevnější a nejrychlejší — databázi máte, nic za ni neplatíte.">
+  <div class="spare-flag">Záložní slide</div>
+  <div class="head">
+    <h1 class="hl">Čím bych začala: tři testy</h1>
+    <p class="sub">Levné, rychlé, a každý odpoví na jinou otázku.</p>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:26px">
+      <div class="tbox">
+        <h3>1 · Cena vs. zážitek</h3>
+        <p>„Zanzibar od X Kč“ (ilustrativní) proti aspirativní kreativě bez ceny.</p>
+        <p class="hyp"><strong>Co zjistím:</strong> jestli nás cena přitahuje ke správné cílovce, nebo k lovcům slev. Rozhoduje kvalita poptávky, ne počet prokliků.</p>
+      </div>
+      <div class="tbox">
+        <h3>2 · Potřeba vs. destinace</h3>
+        <p>„V lednu 30 °C“ proti „Dovolená na Mauriciu“.</p>
+        <p class="hyp"><strong>Co zjistím:</strong> jestli lidi kupují pocit / benefit, nebo samotnou destinaci. Vítěz určí kreativu i landing pages — a kam půjde víc rozpočtu.</p>
+      </div>
+      <div class="tbox">
+        <h3>3 · Aktivace databáze</h3>
+        <p>E-mail lidem, kteří s vámi už jeli: „Byli jste s námi v Řecku. Co letos kousek dál?“</p>
+        <p class="hyp"><strong>Co zjistím:</strong> jak velký je skrytý potenciál ve vlastní databázi. Nulové mediální náklady, okamžitá odpověď.</p>
+      </div>
+    </div>
+    <div class="rule" style="margin:34px 0 20px"></div>
+    <p style="font-size:21px"><strong>Proč zrovna tyhle tři:</strong> každý z nich mění rozhodnutí o penězích. Když vyhraje zážitek nad cenou, přesuneme rozpočet do horní části trychtýře. Když zafunguje databáze, ušetříme statisíce na akvizici.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 13 · ZÁLOŽNÍ — 90 DNÍ ═══════════════ -->
+<section class="slide spare" data-title="Prvních 90 dní"
+  data-notes="První tři týdny neutrácím skoro nic — nejdřív musí fungovat měření.|Do konce 13. týdne mám data na to, abych doplnila model ze slidu 9 vašimi čísly.">
+  <div class="spare-flag">Záložní slide</div>
+  <div class="head">
+    <h1 class="hl">Orientační postup prvních 90 dní</h1>
+    <p class="sub">Od auditu ke škálování toho, co vydělává.</p>
+  </div>
+  <div class="body">
+    <div class="phases">
+      <div class="ph" style="grid-template-columns:230px 1fr"><div class="pl cool">Týden 1–3</div>
+        <div><p style="font-weight:700;font-size:20px">Audit a měření</p>
+        <p style="color:var(--muted)">Data z CRM a rezervačního systému, revize GA4 a konverzí, call tracking, sjednocení reportingu. Skórovací model destinací. Výstup: cílová CPA, za kterou si stojíme.</p></div></div>
+      <div class="ph" style="grid-template-columns:230px 1fr"><div class="pl cool">Týden 3–6</div>
+        <div><p style="font-weight:700;font-size:20px">Spuštění sklízení poptávky</p>
+        <p style="color:var(--muted)">Search a PMax na Hero destinace, značkové kampaně, remarketing, Sklik. První e-mailová vlna do vlastní databáze. Landing pages pro Hero destinace.</p></div></div>
+      <div class="ph" style="grid-template-columns:230px 1fr"><div class="pl">Týden 6–10</div>
+        <div><p style="font-weight:700;font-size:20px">Učení a první testy</p>
+        <p style="color:var(--muted)">Meta na vytváření poptávky, tři testy ze záložního slidu, budování publik. První přelití rozpočtu podle výsledků.</p></div></div>
+      <div class="ph" style="grid-template-columns:230px 1fr;border-bottom:0"><div class="pl">Týden 10–13</div>
+        <div><p style="font-weight:700;font-size:20px">Škálování toho, co vydělává</p>
+        <p style="color:var(--muted)">Navýšení do vítězných destinací a formátů, YouTube vlna před sezónou, revize Hero / Growth / Long tail. Cíle na dalších 9 měsíců s čísly z auditu.</p></div></div>
+    </div>
+    <div class="band" style="margin-top:30px">V týdnu 13 vám přinesu stejný slide s rozpočtem — ale s vašimi čísly místo mých předpokladů.</div>
+  </div>
+</section>
+
+<!-- ═══════════════ 14 · ZÁLOŽNÍ — SKÓROVACÍ MODEL ═══════════════ -->
+<section class="slide spare" data-title="Jak vybereme Hero destinace"
+  data-notes="Váhy nejsou dogma — nastavíme je společně podle toho, co je pro vás priorita.|Pointa je, že rozhodnutí je opakovatelné a přezkoumatelné, ne založené na pocitu.">
+  <div class="spare-flag">Záložní slide</div>
+  <div class="head">
+    <h1 class="hl">Jak vybereme Hero destinace</h1>
+    <p class="sub">Faktory, podle kterých vybereme Hero destinace. Váhy nastavíme podle obchodních priorit CK.</p>
+  </div>
+  <div class="body">
+    <table class="t src" style="margin-bottom:auto">
+      <thead><tr><th>Faktor</th><th>Co nám řekne</th><th>Zdroj dat</th></tr></thead>
+      <tbody>
+        <tr><td>Objem poptávky a její trend</td><td>Má destinace trh, na kterém se dá růst</td><td class="r">Keyword Planner, Google Trends, Sklik</td></tr>
+        <tr><td>Marže a průměrná cena</td><td>Na čem skutečně vyděláte</td><td class="r">vaše obchodní data</td></tr>
+        <tr><td>Historická konverze</td><td>Co už u vás funguje</td><td class="r">GA4, CRM, rezervační systém</td></tr>
+        <tr><td>Dostupná kapacita</td><td>Co vůbec umíte prodat</td><td class="r">produktové oddělení</td></tr>
+        <tr><td>Konkurence a cena zásahu</td><td>Kolik bude stát viditelnost</td><td class="r">Auction Insights, aukční analýzy</td></tr>
+        <tr><td>Sezónnost</td><td>Kdy dává smysl investovat</td><td class="r">Trends, rezervace</td></tr>
+        <tr><td>Produktová výhoda</td><td>Čím se lišíte (let, flexibilita, servis)</td><td class="r">produktové oddělení</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:30px">
+      <p>Váhy nastavíme podle obchodních priorit CK. Destinace bez kapacity není příležitost — je to past na rozpočet.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 15 · ZÁLOŽNÍ — RIZIKA ═══════════════ -->
+<section class="slide spare" data-title="Rizika a co s nimi"
+  data-notes="Tohle je slide, který obvykle chybí — a je to první věc, na kterou se ptá majitel.|Nejdůležitější je první řádek: marketing musí reagovat na zbývající kapacitu.">
+  <div class="spare-flag">Záložní slide</div>
+  <div class="head">
+    <h1 class="hl">Co se může pokazit — a co s tím uděláme</h1>
+  </div>
+  <div class="body">
+    <div>
+      <div class="risk"><h3 style="color:var(--warm-ink)">Vyprodaná kapacita</h3>
+        <p>Nejdražší kampaň je ta, která prodává termín, který už není. Rozpočet řídíme podle zbývající kapacity, ne podle kalendáře — napojíme se na rezervační systém a nastavíme pravidlo pro utlumení destinace, když obsazenost překročí dohodnutou hranici. Marketing musí reagovat na zbývající kapacitu.</p></div>
+      <div class="risk"><h3>Cenová válka se srovnávači</h3>
+        <p>Na generických frázích nás Invia a spol. přeplatí. Nevyhrajeme cenou za proklik, ale relevancí landing page, přímým bookingem a argumenty, které srovnávač nemá — transfer, servis, flexibilní délka.</p></div>
+      <div class="risk"><h3>Výpadek destinace</h3>
+        <p>Kurz, palivo, bezpečnostní situace. Proto jsou Hero destinace tři až pět, ne jedna — a proto držíme 5% rezervu, kterou umíme přesunout během týdne.</p></div>
+      <div class="risk"><h3>Křivá atribuce</h3>
+        <p>Přírůstek ověříme testem s kontrolní skupinou tam, kde na to bude objem. Jinak kombinujeme obchodní data a vývoj poptávky — nejen poslední klik.</p></div>
+      <div class="risk" style="border-bottom:0"><h3>Dlouhé rozhodování v páru</h3>
+        <p>Nákup za desítky tisíc se rozhoduje týdny a napříč zařízeními. Remarketingové okno a dobu vyhodnocení nastavíme podle toho, jak dlouho dopředu lidé reálně rezervují.</p></div>
+    </div>
+    <div class="callout" style="margin-top:34px">
+      <p>Společné pro všechny: co se stane, až nastanou, si dohodneme dopředu. Improvizovat uprostřed sezóny je to nejdražší, co může nastat.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 16 · ZÁLOŽNÍ — KONKURENCE ═══════════════ -->
+<section class="slide spare" data-title="Konkurenční kontext"
+  data-notes="Soutěžíme ve dvou různých aukcích najednou — se srovnávači o generické fráze a s velkými CK o značku.|Prostor je tam, kde velcí nejsou vidět: konkrétní termíny, regionální odlety a vlastní databáze.">
+  <div class="spare-flag">Záložní slide</div>
+  <div class="head">
+    <h1 class="hl">S kým vlastně soutěžíme</h1>
+    <p class="sub">Ve vyhledávání stojíte proti dvěma různým typům soupeřů. Každý potřebuje jinou odpověď.</p>
+  </div>
+  <div class="body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:34px">
+      <div class="card" style="border-top-color:var(--cool)">
+        <h3>Srovnávače a agregátory</h3>
+        <p>Vysoké rozpočty, široký zásah. U generických dotazů očekáváme silnou konkurenci. Ověříme to přes výsledky vyhledávání a Auction Insights.</p>
+        <p class="note" style="margin-top:14px">Odpověď: konkrétní termíny a odletová místa, silnější landing page, důvěra zavedené CK.</p>
+      </div>
+      <div class="card" style="border-top-color:var(--warm)">
+        <h3>Velké cestovní kanceláře</h3>
+        <p>Mají to, co vám chybí — lidé si je s exotikou automaticky spojí. Kupují si pozornost i mimo výkonnostní kanály.</p>
+        <p class="note" style="margin-top:14px">Odpověď: nesoutěžit s nimi v šíři. Vybrat 3–5 destinací a v nich být vidět víc než oni.</p>
+      </div>
+    </div>
+    <div>
+      <div class="eyebrow" style="margin-bottom:16px">Kde je pro vás reálný prostor</div>
+      <ul class="ticks" style="columns:2;column-gap:60px">
+        <li>Destinace a termíny, kde velcí hráči nelétají nebo nejsou vidět</li>
+        <li>Regionální odlety — geograficky zacílitelná výhoda, kterou velcí nemají</li>
+        <li>Flexibilní délka pobytu jako vyhledávací záměr sám o sobě</li>
+        <li>Vlastní databáze zákazníků, ke které se konkurence nedostane</li>
+      </ul>
+    </div>
+    <div class="callout" style="margin-top:28px">
+      <p><strong>Co ověřím v prvním týdnu:</strong> auction insights, podíl ve vyhledávání na značce i neznačce, a jestli na vaše jméno někdo licituje. Značkové kampaně jsou nejlevnější prodeje, které můžete mít — a nejdražší, když je ztratíte.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide spare" data-title="Detail finančního modelu"
+  data-notes="Jen když se zeptají na tržby nebo ROAS. Ilustrace, ne forecast.|Při 80 000 Kč na objednávku: 400 / 570 / 800 objednávek = 32 / 45,6 / 64 mil. Kč tržeb.|To není zisk kampaně. Bez skutečné marže to nepočítám jako výsledek.">
+  <div class="spare-flag">Záložní slide</div>
+  <div class="head">
+    <h1 class="hl">Detail ilustračního modelu</h1>
+    <p class="sub">Ilustrační model, nikoliv forecast. Vstupy po auditu nahradíme čísly CK.</p>
+  </div>
+  <div class="body">
+    <table class="t" style="margin-bottom:auto">
+      <thead><tr><th>Cena za objednávku</th><th>Objednávky z 2 mil. Kč</th><th>Ilustrační tržby při 80 000 Kč</th></tr></thead>
+      <tbody>
+        <tr><td>2 500 Kč</td><td class="n">800</td><td class="n">64,0 mil. Kč</td></tr>
+        <tr><td>3 500 Kč</td><td class="n">cca 570</td><td class="n">45,6 mil. Kč</td></tr>
+        <tr><td>5 000 Kč</td><td class="n">400</td><td class="n">32,0 mil. Kč</td></tr>
+      </tbody>
+    </table>
+    <div class="callout" style="margin-top:28px">
+      <p>Tržby tady jen ukazují řád. Nejsou to slibované výsledky ani zisk kampaně. Zdravý objem poznáme až ze skutečné marže a přijatelné ceny za objednávku.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 17 · ZÁLOŽNÍ — PROČ BEZ PROCENT ═══════════════ -->
+<section class="slide spare" data-title="Proč neslibuji procenta"
+  data-notes="Tohle je odpověď na „a o kolik nám to zvedne prodeje?“.|Neuhýbám — ukázala jsem model i to, jak ho doplním. Slibuji audit a přerozdělení podle dat, ne fikci.">
+  <div class="spare-flag">Záložní slide</div>
+  <div class="head">
+    <h1 class="hl">Proč vám dnes neslíbím<br>konkrétní procenta</h1>
+  </div>
+  <div class="body">
+    <div style="max-width:1450px">
+      <p style="font-size:30px;line-height:1.4;margin-bottom:34px">Bez znalosti vašich dnešních prodejů, marže a ceny za zákazníka by jakékoli konkrétní číslo bylo <strong>falešná přesnost</strong> — vypadá sebevědomě a nedá se podle něj řídit.</p>
+      <div class="rule" style="margin-bottom:30px"></div>
+      <ul class="ticks">
+        <li><strong>Co jsem vám ukázala:</strong> celý model výpočtu i to, jak citlivý je na marži. Rovnice je hotová, chybí jen vaše čísla.</li>
+        <li><strong>Co dostanete po úvodním auditu:</strong> stejný model doplněný z vašich dat, s cílovou CPA a objemem, za kterými si stojím.</li>
+        <li><strong>Co vám mohu slíbit už teď:</strong> rozpočet se po první dostatečně reprezentativní fázi dat přerozdělí podle výsledků, ne podle tohoto slidu.</li>
+      </ul>
+    </div>
+    <div class="callout" style="margin-top:36px">
+      <p>Raději vám dnes řeknu, co nevím, než abych si za tři měsíce vymýšlela, proč to nevyšlo.</p>
+    </div>
+  </div>
+</section>
+
+<div id="progress"></div>
+</div><!-- /stage -->
+</div><!-- /viewport -->
+
+<div id="notes"><h4>Poznámky k prezentaci</h4><ul id="notesList"></ul></div>
+
+<div id="overview" role="dialog" aria-label="Přehled slidů">
+  <h4>Přehled slidů</h4>
+  <p class="ohint">Klikněte na slide pro skok. Zavřít klávesou <strong>O</strong> nebo <strong>Esc</strong>.</p>
+  <div class="osec">Prezentace</div>
+  <div class="ogrid" id="ogridMain"></div>
+  <div class="osec">Záložní slidy — pro dotazy</div>
+  <div class="ogrid" id="ogridSpare"></div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var mainCnt = slides.filter(function(s){return !s.classList.contains('spare');}).length;
+  var idx = 0, overviewOpen = false, notesOpen = false;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- footer: číslo slidu + logo ---------- */
+  slides.forEach(function(s,i){
+    var f = document.createElement('div');
+    f.className = 'foot';
+    var spare = s.classList.contains('spare');
+    f.innerHTML = '<span class="pageno">' + (spare ? 'Z' + (i - mainCnt + 1) : (i+1) + ' / ' + mainCnt) + '</span>' +
+      '<span><img class="logo c" alt="Acomware" src="data:image/png;base64,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"><img class="logo w" alt="Acomware" src="data:image/png;base64,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"></span>';
+    s.appendChild(f);
+  });
+
+  /* ---------- brandový motiv vrcholů ---------- */
+  function chevron(cx, base, w, h, th){
+    var inner = base - h + th * h / w;
+    return [ (cx-w)+','+base, cx+','+(base-h), (cx+w)+','+base,
+             (cx+w-th)+','+base, cx+','+inner, (cx-w+th)+','+base ].join(' ');
+  }
+  function svgEl(w,h){
+    var s = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    s.setAttribute('viewBox','0 0 '+w+' '+h);
+    s.setAttribute('preserveAspectRatio','none');
+    s.setAttribute('aria-hidden','true');
+    s.style.width='100%'; s.style.height='100%'; s.style.display='block';
+    return s;
+  }
+  function poly(svg, pts, fill, op){
+    var p = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    p.setAttribute('points', pts); p.setAttribute('fill', fill);
+    p.setAttribute('opacity', op); svg.appendChild(p); return p;
+  }
+  var PEAK = ['var(--peak-1)','var(--peak-2)','var(--peak-3)'];
+
+  document.querySelectorAll('[data-peaks]').forEach(function(host){
+    var kind = host.getAttribute('data-peaks');
+
+    if (kind === 'strip' || kind === 'strip-dark'){
+      host.style.cssText = 'position:absolute;left:0;right:0;bottom:0;height:150px;pointer-events:none;overflow:hidden';
+      var s = svgEl(1920,150);
+      var dark = kind === 'strip-dark';
+      /* na tmavém slidu strip končí dřív, aby nešel pod logo v pravém dolním rohu */
+      var geo = dark ? [[1020,125],[1195,150],[1370,135],[1500,100]]
+                     : [[1370,125],[1545,155],[1720,135],[1860,105]];
+      geo.forEach(function(c,i){
+        poly(s, chevron(c[0], 150, c[1], c[1]*(dark?.86:1.05), c[1]*0.46),
+             dark ? PEAK[i%3] : PEAK.concat(['var(--acw-navy)'])[i], dark ? .8 : .26);
+      });
+      host.appendChild(s);
+      return;
+    }
+
+    if (kind === 'tiers'){
+      var s2 = svgEl(1000,260);
+      /* vizuální hierarchie Hero > Growth > Long tail — ne fixní podíl rozpočtu */
+      [ {cx:205, w:185, h:242, c:'var(--peak-3)', o:.92},
+        {cx:420, w:135, h:152, c:'var(--acw-navy)', o:.88},
+        {cx:600, w:100, h:92,  c:'var(--tint-4)', o:.92}
+      ].forEach(function(t){
+        poly(s2, chevron(t.cx, 250, t.w, t.h, t.w*0.44), t.c, t.o);
+      });
+      var ln = document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',0); ln.setAttribute('x2',1000);
+      ln.setAttribute('y1',250); ln.setAttribute('y2',250);
+      ln.setAttribute('stroke','var(--line)'); ln.setAttribute('stroke-width','2');
+      s2.appendChild(ln);
+      host.appendChild(s2);
+      return;
+    }
+
+    if (kind === 'season'){
+      var s3 = svgEl(900,250);
+      var months = ['LED','ÚNO','BŘE','DUB','KVĚ','ČVN','ČVC','SRP','ZÁŘ','ŘÍJ','LIS','PRO'];
+      /* kdy se rezervuje, ne kdy se cestuje */
+      var vals = [86,70,55,40,32,30,38,58,78,90,96,80];
+      var base = 208, step = 900/12;
+      vals.forEach(function(v,i){
+        var cx = step*i + step/2;
+        /* barva nese intenzitu, ne pořadí: žlutá = útlum, oranžová = špička */
+        var c = v >= 75 ? 'var(--peak-3)' : (v >= 50 ? 'var(--peak-2)' : 'var(--peak-1)');
+        poly(s3, chevron(cx, base, step*0.55, v*1.6, step*0.26), c, .82);
+      });
+      var ln3 = document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln3.setAttribute('x1',0); ln3.setAttribute('x2',900);
+      ln3.setAttribute('y1',base); ln3.setAttribute('y2',base);
+      ln3.setAttribute('stroke','var(--acw-navy)'); ln3.setAttribute('stroke-width','2');
+      s3.appendChild(ln3);
+      months.forEach(function(m,i){
+        var tx = document.createElementNS('http://www.w3.org/2000/svg','text');
+        tx.setAttribute('x', step*i + step/2); tx.setAttribute('y', base+30);
+        tx.setAttribute('text-anchor','middle');
+        tx.setAttribute('font-family','Mulish, Arial, sans-serif');
+        tx.setAttribute('font-size','15'); tx.setAttribute('font-weight','700');
+        tx.setAttribute('letter-spacing','.4'); tx.setAttribute('fill','var(--muted)');
+        tx.textContent = m; s3.appendChild(tx);
+      });
+      host.appendChild(s3);
+    }
+  });
+
+  /* ---------- animace diagramu kanálů (slide 6) ---------- */
+  var flowSeq = [['n1'],['e1','n2'],['e2','n3'],['e3','n4'],['e4','e5','n5','n6']];
+  var flowTimers = [];
+  document.querySelectorAll('#flow .edge').forEach(function(p){
+    var L = p.getTotalLength ? p.getTotalLength() : 200;
+    p.style.setProperty('--len', L);
+  });
+  function flowReset(){
+    flowTimers.forEach(clearTimeout); flowTimers = [];
+    document.querySelectorAll('#flow .node').forEach(function(n){n.classList.remove('lit');});
+    document.querySelectorAll('#flow .edge').forEach(function(e){e.classList.remove('drawn');});
+  }
+  function flowPlay(){
+    flowReset();
+    if (reduced){
+      flowSeq.forEach(function(g){g.forEach(function(id){
+        var el = document.getElementById(id);
+        el.classList.add(el.tagName === 'path' ? 'drawn' : 'lit');
+      });});
+      return;
+    }
+    flowSeq.forEach(function(group, gi){
+      flowTimers.push(setTimeout(function(){
+        group.forEach(function(id){
+          var el = document.getElementById(id);
+          el.classList.add(el.tagName === 'path' ? 'drawn' : 'lit');
+        });
+      }, 120 + gi*280));
+    });
+  }
+
+  /* ---------- poznámky ---------- */
+  function renderNotes(){
+    var raw = (slides[idx].getAttribute('data-notes') || '').split('|').filter(Boolean);
+    document.getElementById('notesList').innerHTML =
+      raw.map(function(t){return '<li>'+t+'</li>';}).join('') || '<li>—</li>';
+  }
+
+  /* ---------- zobrazení slidu ---------- */
+  function show(i){
+    idx = Math.max(0, Math.min(slides.length-1, i));
+    slides.forEach(function(s,k){ s.classList.toggle('on', k===idx); });
+    var isSpare = slides[idx].classList.contains('spare');
+    document.getElementById('progress').style.width =
+      (isSpare ? 100 : ((idx+1)/mainCnt*100)) + '%';
+    document.getElementById('progress').style.background =
+      slides[idx].classList.contains('dark') ? 'var(--acw-amber)' : 'var(--cool)';
+    if (slides[idx].querySelector('#flow')) flowPlay(); else flowReset();
+    renderNotes();
+    try{ history.replaceState(null,'','#'+(idx+1)); }catch(e){}
+  }
+  /* z hlavní části nelze doklikat na záložní */
+  function next(){ if (idx < mainCnt-1 || slides[idx].classList.contains('spare')) show(Math.min(idx+1, slides.length-1)); }
+  function prev(){ show(Math.max(idx-1,0)); }
+
+  /* ---------- přehled ---------- */
+  var built = false;
+  function buildOverview(){
+    if (built) return; built = true;
+    slides.forEach(function(s,i){
+      var t = document.createElement('button');
+      t.className = 'thumb'; t.type = 'button';
+      t.setAttribute('aria-label','Slide '+(i+1)+': '+(s.getAttribute('data-title')||''));
+      var inner = document.createElement('div');
+      inner.className = 'inner';
+      var clone = s.cloneNode(true);
+      clone.classList.add('on');
+      inner.appendChild(clone);
+      t.appendChild(inner);
+      var tn = document.createElement('span');
+      tn.className = 'tn';
+      tn.textContent = (i+1) + ' · ' + (s.getAttribute('data-title')||'');
+      t.appendChild(tn);
+      t.addEventListener('click', function(){ closeOverview(); show(i); });
+      (s.classList.contains('spare') ? document.getElementById('ogridSpare')
+                                     : document.getElementById('ogridMain')).appendChild(t);
+    });
+    scaleThumbs();
+  }
+  function scaleThumbs(){
+    document.querySelectorAll('.thumb').forEach(function(t){
+      var w = t.clientWidth;
+      t.querySelector('.inner').style.transform = 'scale(' + (w/1920) + ')';
+    });
+  }
+  function openOverview(){
+    buildOverview();
+    document.getElementById('overview').classList.add('on');
+    overviewOpen = true;
+    scaleThumbs();   /* až po zobrazení — dřív je clientWidth nula */
+  }
+  function closeOverview(){ document.getElementById('overview').classList.remove('on'); overviewOpen = false; }
+
+  /* ---------- škálování ---------- */
+  function fit(){
+    var h = window.innerHeight - (notesOpen ? (window.innerWidth < 900 ? 150 : 180) : 0);
+    var s = Math.min(window.innerWidth / 1920, h / 1080) * 0.985;
+    stage.style.transform = 'scale(' + s + ')';
+    document.getElementById('viewport').style.paddingBottom = (notesOpen ? (window.innerWidth<900?150:180) : 0) + 'px';
+    if (overviewOpen) scaleThumbs();
+  }
+
+  /* ---------- ovládání ---------- */
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+    if (k === 'Escape' && overviewOpen){ closeOverview(); return; }
+    if (k === 'o' || k === 'O' || k === 'ó'){ e.preventDefault(); overviewOpen ? closeOverview() : openOverview(); return; }
+    if (overviewOpen) return;
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'Enter'){ e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace'){ e.preventDefault(); prev(); }
+    else if (k === 'Home'){ show(0); }
+    else if (k === 'End'){ show(mainCnt-1); }
+    else if (k === 'n' || k === 'N' || k === 'ň'){
+      notesOpen = !notesOpen; document.body.classList.toggle('notes', notesOpen); fit();
+    }
+  });
+  document.getElementById('viewport').addEventListener('click', function(e){
+    if (overviewOpen) return;
+    if (e.clientX < window.innerWidth * 0.18) prev(); else next();
+  });
+  var tsx = null;
+  document.addEventListener('touchstart', function(e){ tsx = e.changedTouches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if (tsx === null || overviewOpen) return;
+    var d = e.changedTouches[0].clientX - tsx;
+    if (Math.abs(d) > 45){ d < 0 ? next() : prev(); }
+    tsx = null;
+  }, {passive:true});
+  window.addEventListener('resize', fit);
+  /* aby fungoval i odkaz přímo na slide (…#8) a ruční úprava kotvy */
+  window.addEventListener('hashchange', function(){
+    var n = parseInt((location.hash || '').replace('#',''), 10);
+    if (!isNaN(n) && n-1 !== idx) show(n-1);
+  });
+
+  /* nápověda k ovládání zmizí, jakmile se přestane hýbat — při promítání nepřekáží */
+  var help = document.getElementById('help'), helpT;
+  function pokeHelp(){
+    help.classList.remove('hide');
+    clearTimeout(helpT);
+    helpT = setTimeout(function(){ help.classList.add('hide'); }, 3200);
+  }
+  ['mousemove','keydown','click'].forEach(function(ev){
+    document.addEventListener(ev, pokeHelp, {passive:true});
+  });
+  pokeHelp();
+
+  var start = parseInt((location.hash || '').replace('#',''), 10);
+  fit();
+  show(isNaN(start) ? 0 : start-1);
+})();
+</script>
+</body>
+</html>
